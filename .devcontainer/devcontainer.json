@@ -1,6 +1,6 @@
 // For format details, see https://aka.ms/vscode-remote/devcontainer.json or this file's README at:
 {
-	"name": "Ubuntu",
+	"name": "devbox",
 	"build": {
 		"dockerfile": "./Dockerfile",
 		"args": {
@@ -30,7 +30,6 @@
 		"--cap-add=SYS_PTRACE",
 		"--security-opt",
 		"seccomp=unconfined",
-		"--name=vsc-cpp-sandbox",
 		// Allows to run GUI X11 applications inside container
 		"--env=DISPLAY",
 		"--volume=/tmp/.X11-unix:/tmp/.X11-unix:rw",
