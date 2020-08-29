@@ -10,8 +10,7 @@ LABEL maintainer="zhouhai<yew1eb@gmail.com>"
 # tzdata设置为非交互方式
 ENV DEBIAN_FRONTEND noninteractive
 
-ARG workdir=/home/zhouhai/workspaces
-ARG username=zhouhai
+ARG workdir=/workspaces
 
 # 将ubuntu默认的软件源替换成国内阿里云
 RUN sed -i s@/archive.ubuntu.com/@/mirrors.aliyun.com/@g /etc/apt/sources.list && \
@@ -25,6 +24,7 @@ RUN apt install -y --no-install-recommends \
     cmake  \
     gdb gdbserver \
     rsync \
+    net-tools \
     vim \
     git \
     wget \
@@ -33,21 +33,29 @@ RUN apt install -y --no-install-recommends \
 
 # ssh配置
 RUN apt install -y openssh-server
-RUN mkdir /var/run/sshd && \
-    mkdir /root/.ssh
+RUN mkdir -p /var/run/sshd && \
+    mkdir -p /root/.ssh
+
 # 修改 root 的密码为 root
 RUN echo 'root:root' | chpasswd
 RUN sed -ri 's/^#?PermitRootLogin\s+.*/PermitRootLogin yes/' /etc/ssh/sshd_config
+
+# 允许无密码的账号登录
+RUN sed -ri 's/^#?PermitEmptyPasswords\s+.*/PermitEmptyPasswords yes/' /etc/ssh/sshd_config
+
 # SSH login fix. Otherwise user is kicked off after login
 RUN sed -i 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' /etc/pam.d/sshd
 
 ENV NOTVISIBLE "in users profile"
 RUN echo "export VISIBLE=now" >> /etc/profile
 
+
+
 # 创建一个个人账号
-RUN useradd -ms /bin/bash ${username}
-#RUN echo '${username}:${username}' | chpasswd
-RUN echo '${username}  ALL=(ALL:ALL) ALL' >> /etc/sudoers
+RUN useradd -ms /bin/bash zhouhai
+RUN echo 'zhouhai:zhouhai' | chpasswd
+RUN passwd -d zhouhai
+RUN echo 'zhouhai  ALL=(ALL:ALL) ALL' >> /etc/sudoers
 
 # c++开发环境
 RUN apt install -y g++ gcc
@@ -64,7 +72,7 @@ ENV GOPATH=${workdir}/go
 ENV PATH $GOPATH/bin:${GOROOT}/bin:$PATH
 RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH" &&\
     echo "export GOROOT=${GOROOT}" >> /etc/profile && \
-    echo "export GOPATH=${workdir}/go" >> /etc/profile  \
+    echo "export GOPATH=${workdir}/go" >> /etc/profile  && \
     echo "export PATH=${GOROOT}/bin:${PATH}" >> /etc/profile  
 
 
@@ -81,12 +89,11 @@ RUN apt clean && \
 EXPOSE 2000
 
 
-USER ${username}
+USER zhouhai
 VOLUME ${workdir}
 WORKDIR ${workdir}
 
 # 22 for ssh server.
 EXPOSE 22
 
-
-CMD ["/usr/sbin/sshd", "-D"]
+CMD sudo service ssh start

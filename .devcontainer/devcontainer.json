@@ -16,22 +16,25 @@
 		"golang.Go",
 	],
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
+	//"forwardPorts": [],
+	"appPort": ["32200:22" ],
+
 	// Use 'postCreateCommand' to run commands after the container is created.
 	// "postCreateCommand": "uname -a",
+
 	// Uncomment to use the Docker CLI from inside the container. See https://aka.ms/vscode-remote/samples/docker-from-docker.
-	// "mounts": [ "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind" ],
+	"mounts": [ "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind" ],
+	
 	// Uncomment when using a ptrace-based debugger like C++, Go, and Rust
 	"runArgs": [
 		"--cap-add=SYS_PTRACE",
 		"--security-opt",
 		"seccomp=unconfined",
-		// Container shares the host’s networking namespace
-		"--net=host",
+		"--name=vsc-cpp-sandbox",
 		// Allows to run GUI X11 applications inside container
 		"--env=DISPLAY",
 		"--volume=/tmp/.X11-unix:/tmp/.X11-unix:rw",
-		"--volume=/Users/yew1eb/workspaces:/home/zhouhai/workspaces",
+		"--volume=/Users/yew1eb/workspaces:/workspaces",
 		// Allows to use OpenGL acceleration
 		"--privileged",
 	],
